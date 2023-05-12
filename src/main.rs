@@ -1,8 +1,6 @@
-use once_cell::sync::Lazy;
-
-use desktopparse::WaylandDesktop;
-
-static DESKTOPS: Lazy<Vec<WaylandDesktop>> = Lazy::new(|| desktopparse::get_all_desktop());
+mod xdginfos;
+mod slintui;
+mod login;
 
 fn main() {
     println!("Hello, world!");
