@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Sway
+Comment=An i3-compatible Wayland compositor
+Exec=env XDG_CURRENT_DESKTOP=sway QT_QPA_PLATFORMTHEME=qt5ct _JAVA_AWT_WM_NONREPARENTING=1 sway --unsupported-gpu
+#Exec=env XDG_CURRENT_DESKTOP=sway _JAVA_AWT_WM_NONREPARENTING=1 sway --unsupported-gpu
+Type=Application

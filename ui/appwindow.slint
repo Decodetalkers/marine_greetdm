@@ -1,0 +1,102 @@
+import { Button, VerticalBox , HorizontalBox, GridBox, GroupBox, ListView, ComboBox, LineEdit} from "std-widgets.slint";
+
+export struct WmInfo {
+    name: string,
+    command: string,
+}
+
+export global SystemInfos {
+    in-out property <[string]> users : ["marine", "Flower"];
+    in-out property <[string]> wms : ["sway", "kde"];
+    in-out property <[string]> wm-command : ["sway", "kde"];
+}
+
+
+export component AppWindow inherits Window {
+    no-frame: true;
+    property <int> wmindex : 1;
+    Image {
+        x: 0; y: 0;
+        height: 100%; width: 100%;
+        // https://commons.wikimedia.org/wiki/File:Berlin_potsdamer_platz.jpg Belappetit, CC BY-SA 3.0
+        source: @image-url("../misc/resources/gangdamu.png");
+        image-fit: cover;
+    }
+    VerticalBox {
+        alignment: center;
+        HorizontalBox {
+            Rectangle {}
+            user := ComboBox {
+                max-width: 300px;
+                current-value: SystemInfos.users[0];
+                model: SystemInfos.users;
+            }
+            Rectangle {}
+        }
+        HorizontalBox {
+            Rectangle {}
+            wm := ComboBox {
+                max-width: 300px;
+                current-value: SystemInfos.wms[0];
+                model: SystemInfos.wms;
+                current-index <=> wmindex;
+                selected => {
+                    commend.text = SystemInfos.wm-command[wm.current-index];
+                }
+            }
+            Rectangle {}
+        }
+        HorizontalBox {
+            Rectangle {}
+            Text {
+                text: "command:";
+                font-size: 15px;
+                font-weight: 30;
+                color: blueviolet;
+            }
+            commend := LineEdit {
+                text: SystemInfos.wm-command[0];
+            }
+            Rectangle {}
+        }
+        Rectangle {}
+        HorizontalBox {
+            Rectangle {}
+            edit := LineEdit {
+                input-type: password;
+                text: "ssss";
+            }
+            Button {
+                text: "s/h";
+                max-width: 30px;
+                clicked => {
+                    if (edit.input-type == InputType.password) {
+                        edit.input-type = InputType.text;
+                    } else {
+                        edit.input-type = InputType.password;
+                    }
+                }
+            }
+            Rectangle {}
+        }
+        Rectangle {}
+        HorizontalBox {
+            Rectangle {}
+            Button {
+                text: "shutdown";
+                max-width: 30px;
+            }
+            Button {
+                text: "Login";
+                max-width: 30px;
+                clicked => {
+                    debug(edit.text);
+                    debug(wm.current-value);
+                    debug(user.current-value);
+                    debug(commend.text);
+                }
+            }
+            Rectangle {}
+        }
+    }
+}
