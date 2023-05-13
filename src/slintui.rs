@@ -50,6 +50,7 @@ pub fn greet_ui() -> anyhow::Result<()> {
     ui.on_Shutdown(move || {
         let ui_inner = ui_handle2.unwrap();
         let shutdown = std::process::Command::new("shutdown").arg("now").exec();
+        println!("shutdown failed");
         ui_inner.invoke_SetMessage("Warning".into(), shutdown.to_string().into());
     });
 
