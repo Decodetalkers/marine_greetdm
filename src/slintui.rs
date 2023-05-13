@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{os::unix::process::CommandExt, rc::Rc};
 
 use slint::VecModel;
 
@@ -22,6 +22,7 @@ pub fn greet_ui() -> anyhow::Result<()> {
     systeminfos.set_wms(Rc::new(VecModel::from(des)).into());
     systeminfos.set_wm_command(Rc::new(VecModel::from(commands)).into());
     let ui_handle = ui.as_weak();
+    let ui_handle2 = ui.as_weak();
 
     ui.on_Login(move |user, passward, cmd| {
         let ui_inner = ui_handle.unwrap();
@@ -44,6 +45,12 @@ pub fn greet_ui() -> anyhow::Result<()> {
                 ui_inner.invoke_SetMessage("Warning".into(), e.to_string().into());
             }
         };
+    });
+
+    ui.on_Shutdown(move || {
+        let ui_inner = ui_handle2.unwrap();
+        let shutdown = std::process::Command::new("shutdown").arg("now").exec();
+        ui_inner.invoke_SetMessage("Warning".into(), shutdown.to_string().into());
     });
 
     ui.run()?;
