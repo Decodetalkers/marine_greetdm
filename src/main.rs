@@ -1,6 +1,6 @@
-mod xdginfos;
-mod slintui;
 mod login;
+mod slintui;
+mod xdginfos;
 
 fn main() {
     slintui::greet_ui().unwrap();

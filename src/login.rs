@@ -52,9 +52,10 @@ pub fn login(
                 match error_type {
                     ErrorType::AuthError => return Ok(LoginResult::Failure(description)),
                     ErrorType::Error => {
-                        return Ok(LoginResult::Failure(
-                            format!("login error: {:?}", description).into(),
-                        ))
+                        return Ok(LoginResult::Failure(format!(
+                            "login error: {:?}",
+                            description
+                        )))
                     }
                 }
             }

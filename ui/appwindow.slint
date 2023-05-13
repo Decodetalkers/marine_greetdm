@@ -6,7 +6,6 @@ export struct WmInfo {
 }
 
 export global SystemInfos {
-    in-out property <[string]> users : [""];
     in-out property <[string]> wms : ["sway", "kde"];
     in-out property <[string]> wm-command : ["sway", "kde"];
 }
@@ -22,6 +21,7 @@ export component AppWindow inherits Window {
         image-fit: cover;
     }
 
+    callback Shutdown();
     callback Login(string, string, string);
     callback SetMessage(string, string);
     SetMessage(type, messagein) => {
@@ -38,10 +38,8 @@ export component AppWindow inherits Window {
         alignment: center;
         HorizontalBox {
             Rectangle {}
-            user := ComboBox {
-                max-width: 300px;
-                current-value: SystemInfos.users[0];
-                model: SystemInfos.users;
+            user := LineEdit {
+                max-width: 100px;
             }
             Rectangle {}
         }
@@ -97,12 +95,15 @@ export component AppWindow inherits Window {
             Button {
                 text: "shutdown";
                 max-width: 30px;
+                clicked => {
+                    Shutdown();
+                }
             }
             Button {
                 text: "Login";
                 max-width: 30px;
                 clicked => {
-                    Login(user.current-value,edit.text, commend.text);
+                    Login(user.text,edit.text, commend.text);
                 }
             }
             Rectangle {}
