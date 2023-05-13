@@ -3,5 +3,5 @@ mod slintui;
 mod login;
 
 fn main() {
-    println!("Hello, world!");
+    slintui::greet_ui().unwrap();
 }

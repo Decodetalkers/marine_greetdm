@@ -6,7 +6,7 @@ export struct WmInfo {
 }
 
 export global SystemInfos {
-    in-out property <[string]> users : ["marine", "Flower"];
+    in-out property <[string]> users : [""];
     in-out property <[string]> wms : ["sway", "kde"];
     in-out property <[string]> wm-command : ["sway", "kde"];
 }
@@ -22,10 +22,11 @@ export component AppWindow inherits Window {
         image-fit: cover;
     }
 
-    callback Login(string, string);
+    callback Login(string, string, string);
     callback SetMessage(string, string);
-    SetMessage(messagein, type) => {
-        if(type == "warning") {
+    SetMessage(type, messagein) => {
+        debug(messagein);
+        if(type == "Warning") {
             messageline.color = Colors.yellow;
         } else {
             messageline.color = Colors.black;
@@ -101,10 +102,7 @@ export component AppWindow inherits Window {
                 text: "Login";
                 max-width: 30px;
                 clicked => {
-                    debug(edit.text);
-                    debug(wm.current-value);
-                    debug(user.current-value);
-                    debug(commend.text);
+                    Login(user.current-value,edit.text, commend.text);
                 }
             }
             Rectangle {}
