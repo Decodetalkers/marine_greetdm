@@ -82,7 +82,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 .unwrap_or_default();
                             println!("{comment}");
                         }
-                    },
+                    }
                     "exit" => break,
                     "help" => {
                         println!("use 'clear' to clear terminal");
@@ -167,7 +167,7 @@ fn choose_wm() -> i32 {
         .map(|wm| wm.name.clone())
         .collect::<Vec<String>>();
     let Ok(index) = FuzzySelect::with_theme(&ColorfulTheme::default())
-        .with_prompt(format!("Now to choose a wm"))
+        .with_prompt("Now to choose a wm")
         .default(0)
         .items(wms)
         .interact() else {

@@ -64,8 +64,7 @@ pub fn get_all_desktop() -> Vec<WaylandDesktop> {
     if let Ok(entry) = glob("/usr/share/wayland-sessions/*.desktop") {
         entry
             .flatten()
-            .into_iter()
-            .map(|enty| {
+            .filter_map(|enty| {
                 read_to_string(enty.clone()).ok().and_then(|message| {
                     WaylandDesktop::new(
                         message,
@@ -73,7 +72,6 @@ pub fn get_all_desktop() -> Vec<WaylandDesktop> {
                     )
                 })
             })
-            .flatten()
             .collect()
     } else {
         Vec::new()
