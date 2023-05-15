@@ -196,7 +196,7 @@ fn choose_command() -> i32 {
     let Ok(index) = FuzzySelect::with_theme(&ColorfulTheme::default())
         .with_prompt("Now to choose a wm")
         .default(0)
-        .items(&COMMANDS)
+        .items(COMMANDS)
         .interact() else {
         return -1;
     };
