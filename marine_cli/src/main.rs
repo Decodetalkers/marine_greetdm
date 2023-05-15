@@ -15,7 +15,7 @@ use crate::{
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::FuzzySelect;
 use hint::*;
-//const COMMANDS: &[&str] = &["login", "show", "clear"];
+const COMMANDS: &[&str] = &["loginwm", "loginshell", "showinfo", "help", "exit", "clear"];
 use std::collections::HashSet;
 
 //use rustyline::hint::{Hint, Hinter};
@@ -34,6 +34,7 @@ fn diy_hints() -> HashSet<CommandHint> {
     set.insert(CommandHint::new("showinfo", "showinfo"));
     set.insert(CommandHint::new("clear", "clear"));
     set.insert(CommandHint::new("exit", "exit"));
+    set.insert(CommandHint::new("s", "s"));
     set
 }
 
@@ -66,90 +67,96 @@ fn main() -> Result<(), Box<dyn Error>> {
             rl.set_helper(None);
         }
         match readline {
-            Ok(line) => match currenttype {
-                RustLineType::CommandChoose => match line.as_str() {
-                    "clear" => {
-                        println!("{}c", 27 as char);
+            Ok(mut line) => {
+                if line == "s" {
+                    let chooseindex = choose_command();
+                    if chooseindex == -1 {
+                        println!("cancel");
+                        continue;
                     }
-                    "loginwm" => {
-                        currenttype = RustLineType::LoginWm;
-                        prompt = "UserName: ";
-                    }
-                    "loginshell" => {
-                        currenttype = RustLineType::LoginShell;
-                        prompt = "UserName: ";
-                    }
-                    "showinfo" => {
+                    line = COMMANDS[chooseindex as usize].to_string();
+                }
+                match currenttype {
+                    RustLineType::CommandChoose => match line.as_str() {
+                        "clear" => {
+                            println!("{}c", 27 as char);
+                        }
+                        "loginwm" => {
+                            currenttype = RustLineType::LoginWm;
+                            prompt = "UserName: ";
+                        }
+                        "loginshell" => {
+                            currenttype = RustLineType::LoginShell;
+                            prompt = "UserName: ";
+                        }
+                        "showinfo" => {
+                            let wm_index = choose_wm();
+                            if wm_index == -1 {
+                                println!("You have not choose a wm");
+                                continue;
+                            } else {
+                                let comment = (&*DESKTOPS)[wm_index as usize]
+                                    .comment
+                                    .clone()
+                                    .unwrap_or_default();
+                                println!("{comment}");
+                            }
+                        }
+                        "exit" => break,
+                        "help" => {
+                            println!("use 'clear' to clear terminal");
+                            println!("use 'loginwm' to login the wm");
+                            println!("use 'loginshell' to login with the command you want");
+                            println!("use 'showinfo' to show the wm info");
+                            println!("use 'exit' to exit");
+                            println!("use 's' to fuzzle select commands");
+                        }
+                        _ => println!("no such command"),
+                    },
+                    RustLineType::LoginWm => {
+                        username = line;
+                        password = prompt_password("password: ").unwrap();
                         let wm_index = choose_wm();
                         if wm_index == -1 {
                             println!("You have not choose a wm");
                             continue;
                         } else {
-                            let comment = (&*DESKTOPS)[wm_index as usize]
-                                .comment
-                                .clone()
-                                .unwrap_or_default();
-                            println!("{comment}");
+                            command = (&*DESKTOPS)[wm_index as usize].exec.clone();
+                            currenttype = RustLineType::ToLogin;
+                            prompt = "Command:";
                         }
                     }
-                    "exit" => break,
-                    "help" => {
-                        println!("use 'clear' to clear terminal");
-                        println!("use 'loginwm' to login the wm");
-                        println!("use 'loginshell' to login with the command you want");
-                        println!("use 'showinfo' to show the wm info");
-                        println!("use 'exit' to exit");
-                    }
-                    _ => println!("no such command"),
-                },
-                RustLineType::LoginWm => {
-                    username = line;
-                    password = prompt_password("password: ").unwrap();
-                    let wm_index = choose_wm();
-                    if wm_index == -1 {
-                        println!("You have not choose a wm");
-                        continue;
-                    } else {
-                        command = (&*DESKTOPS)[wm_index as usize].exec.clone();
+                    RustLineType::LoginShell => {
+                        username = line;
+                        password = prompt_password("password: ").unwrap();
+                        prompt = "Shell: ";
                         currenttype = RustLineType::ToLogin;
-                        prompt = "Command:";
-                        //.split(' ')
-                        //.collect::<Vec<&str>>()
-                        //.into_iter()
-                        //.map(|cmd| cmd.to_string())
-                        //.collect();
+                    }
+                    RustLineType::ToLogin => {
+                        let cmd = line
+                            .split(' ')
+                            .collect::<Vec<&str>>()
+                            .into_iter()
+                            .map(|cmd| cmd.to_string())
+                            .collect();
+                        match login(username.clone(), password.clone(), cmd) {
+                            Ok(LoginResult::Success) => {
+                                break;
+                            }
+                            Ok(LoginResult::Failure(message)) => {
+                                println!("Error: {message}");
+                                currenttype = RustLineType::CommandChoose;
+                                prompt = &defaultpromot;
+                                command = String::new();
+                            }
+                            Err(e) => {
+                                println!("Error to Login: {e}");
+                                break;
+                            }
+                        };
                     }
                 }
-                RustLineType::LoginShell => {
-                    username = line;
-                    password = prompt_password("password: ").unwrap();
-                    prompt = "Shell: ";
-                    currenttype = RustLineType::ToLogin;
-                }
-                RustLineType::ToLogin => {
-                    let cmd = line
-                        .split(' ')
-                        .collect::<Vec<&str>>()
-                        .into_iter()
-                        .map(|cmd| cmd.to_string())
-                        .collect();
-                    match login(username.clone(), password.clone(), cmd) {
-                        Ok(LoginResult::Success) => {
-                            break;
-                        }
-                        Ok(LoginResult::Failure(message)) => {
-                            println!("Error: {message}");
-                            currenttype = RustLineType::CommandChoose;
-                            prompt = &defaultpromot;
-                            command = String::new();
-                        }
-                        Err(e) => {
-                            println!("Error to Login: {e}");
-                            break;
-                        }
-                    };
-                }
-            },
+            }
             Err(ReadlineError::Interrupted) => {
                 currenttype = RustLineType::CommandChoose;
                 prompt = &defaultpromot;
@@ -179,6 +186,17 @@ fn choose_wm() -> i32 {
         .with_prompt("Now to choose a wm")
         .default(0)
         .items(wms)
+        .interact() else {
+        return -1;
+    };
+    index as i32
+}
+
+fn choose_command() -> i32 {
+    let Ok(index) = FuzzySelect::with_theme(&ColorfulTheme::default())
+        .with_prompt("Now to choose a wm")
+        .default(0)
+        .items(&COMMANDS)
         .interact() else {
         return -1;
     };
