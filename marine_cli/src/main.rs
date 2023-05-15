@@ -6,6 +6,7 @@ use rustyline::Editor;
 use rustyline::{error::ReadlineError, history::DefaultHistory};
 
 use std::error::Error;
+use std::fs;
 
 use crate::{
     login::{login, LoginResult},
@@ -36,6 +37,13 @@ fn diy_hints() -> HashSet<CommandHint> {
     set
 }
 
+fn hostname() -> String {
+    fs::read_to_string("/etc/hostname")
+        .unwrap_or(String::new())
+        .trim()
+        .to_string()
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let h = DIYHinter { hints: diy_hints() };
     let mut rl = Editor::<DIYHinter, DefaultHistory>::new()?;
@@ -43,11 +51,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut command: String = String::new();
     let mut username: String = String::new();
     let mut password: String = String::new();
-    let mut prompt = ">>";
+    let defaultpromot = format!("{} >> ", hostname());
+    let mut prompt: &str = &defaultpromot;
     let mut currenttype = RustLineType::CommandChoose;
     loop {
         let readline = if let RustLineType::ToLogin = currenttype {
-            rl.readline_with_initial(prompt, (command.as_str(),""))
+            rl.readline_with_initial(prompt, (command.as_str(), ""))
         } else {
             rl.readline(prompt)
         };
@@ -131,7 +140,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         Ok(LoginResult::Failure(message)) => {
                             println!("Error: {message}");
                             currenttype = RustLineType::CommandChoose;
-                            prompt = ">>";
+                            prompt = &defaultpromot;
                             command = String::new();
                         }
                         Err(e) => {
@@ -143,7 +152,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             },
             Err(ReadlineError::Interrupted) => {
                 currenttype = RustLineType::CommandChoose;
-                prompt = ">>";
+                prompt = &defaultpromot;
                 command = String::new();
                 println!("CTRL-C");
                 println!("Cancel to select");
