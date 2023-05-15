@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut currenttype = RustLineType::CommandChoose;
     loop {
         let readline = if let RustLineType::ToLogin = currenttype {
-            rl.readline_with_initial(prompt, ("", command.as_str()))
+            rl.readline_with_initial(prompt, (command.as_str(),""))
         } else {
             rl.readline(prompt)
         };
