@@ -56,16 +56,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut prompt: &str = &defaultpromot;
     let mut currenttype = RustLineType::CommandChoose;
     loop {
-        let readline = if let RustLineType::ToLogin = currenttype {
-            rl.readline_with_initial(prompt, (command.as_str(), ""))
-        } else {
-            rl.readline(prompt)
-        };
         if let RustLineType::CommandChoose = currenttype {
             rl.set_helper(Some(h.clone()));
         } else {
             rl.set_helper(None);
         }
+
+        let readline = if let RustLineType::ToLogin = currenttype {
+            rl.readline_with_initial(prompt, (command.as_str(), ""))
+        } else {
+            rl.readline(prompt)
+        };
         match readline {
             Ok(mut line) => {
                 if line == "s" {
