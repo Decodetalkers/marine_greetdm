@@ -1,0 +1,22 @@
+pkgname=marine_greetd
+pkgver=0.1.0
+pkgrel=1.0
+pkgdesc='A simple cli login dm just for wayland'
+arch=('x86_64' 'aarch64')
+url='https://github.com/Decodetalkers/marine_greetdm'
+license=('MIT')
+makedepends=('git' 'ninja' 'meson' 'rust')
+source=('source.tar.gz')
+sha512sums=('SKIP')
+
+build() {
+  meson setup \
+    -Dprefix=/usr \
+    -Dbuildtype=release \
+    build
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C build install
+}

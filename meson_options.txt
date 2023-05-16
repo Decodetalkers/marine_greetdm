@@ -1,0 +1,1 @@
+option('marine_cli', type: 'boolean', value: true, description: 'marine-cli')
