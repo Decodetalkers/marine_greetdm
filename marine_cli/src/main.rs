@@ -134,12 +134,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                         currenttype = RustLineType::ToLogin;
                     }
                     RustLineType::ToLogin => {
-                        let cmd = line
+                        let cmd: Vec<String> = line
+                            .trim()
                             .split(' ')
                             .collect::<Vec<&str>>()
                             .into_iter()
+                            .filter(|cmd| !cmd.is_empty())
                             .map(|cmd| cmd.to_string())
                             .collect();
+
+                        if cmd.is_empty() {
+                            eprintln!("Miss Shell Command");
+                            continue;
+                        }
                         match login(username.clone(), password.clone(), cmd) {
                             Ok(LoginResult::Success) => {
                                 break;
