@@ -122,7 +122,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                             println!("You have not choose a wm");
                             continue;
                         } else {
-                            command = (&*DESKTOPS)[wm_index as usize].exec.clone();
+                            let wmname = (&*DESKTOPS)[wm_index as usize].name.clone();
+                            let is_gnome = wmname.to_lowercase().starts_with("gnome");
+                            let cache_command = (&*DESKTOPS)[wm_index as usize].exec.clone();
+
+                            command = if is_gnome {
+                                format!(
+                                    "env XDG_SESSION_TYPE=wayland dbus-run-session {cache_command}"
+                                )
+                            } else {
+                                cache_command
+                            };
                             currenttype = RustLineType::ToLogin;
                             prompt = "Command:";
                         }
@@ -147,6 +157,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             eprintln!("Miss Shell Command");
                             continue;
                         }
+
                         match login(username.clone(), password.clone(), cmd) {
                             Ok(LoginResult::Success) => {
                                 break;
@@ -194,7 +205,8 @@ fn choose_wm() -> i32 {
         .with_prompt("Now to choose a wm")
         .default(0)
         .items(wms)
-        .interact() else {
+        .interact()
+    else {
         return -1;
     };
     index as i32
@@ -205,7 +217,8 @@ fn choose_command() -> i32 {
         .with_prompt("Now to choose a command")
         .default(0)
         .items(COMMANDS)
-        .interact() else {
+        .interact()
+    else {
         return -1;
     };
     index as i32
