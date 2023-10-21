@@ -2,8 +2,8 @@
 # This allow you to config environment for different environment
 
 # [[envs]]
-# UseIn = "Sway"
-# Values = [
+# useIn = "Sway"
+# values = [
 #         { key = "QT_QPA_PLATFORMTHEME", value = "qt5ct" },
 #         { key = "_JAVA_AWT_WM_NONREPARENTING", value = "1" },
 #         { key = "XDG_CURRENT_DESKTOP", value = "sway" },
