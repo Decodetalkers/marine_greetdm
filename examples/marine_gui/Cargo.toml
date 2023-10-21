@@ -9,7 +9,7 @@ build = "build.rs"
 
 [dependencies]
 greetd_ipc = { version = "0.9.0", features = ["sync-codec"] }
-desktopparse = { path = "../desktopparse"}
+desktopparse = { path = "../../desktopparse"}
 once_cell = "1.18.0"
 slint = "1.2.2"
 anyhow = "1.0.75"
