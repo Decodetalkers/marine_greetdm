@@ -1,3 +1,4 @@
+mod config;
 mod hint;
 mod login;
 mod xdginfos;
@@ -55,6 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let defaultpromot = format!("{} >> ", hostname());
     let mut prompt: &str = &defaultpromot;
     let mut currenttype = RustLineType::CommandChoose;
+    let mut current_wm: String = String::new();
     loop {
         if let RustLineType::CommandChoose = currenttype {
             rl.set_helper(Some(h.clone()));
@@ -122,8 +124,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                             println!("You have not choose a wm");
                             continue;
                         } else {
-                            let wmname = (&*DESKTOPS)[wm_index as usize].name.clone();
-                            let is_gnome = wmname.to_lowercase().starts_with("gnome");
+                            current_wm = (&*DESKTOPS)[wm_index as usize].name.clone();
+                            let is_gnome = current_wm.to_lowercase().starts_with("gnome");
                             let cache_command = (&*DESKTOPS)[wm_index as usize].exec.clone();
 
                             command = if is_gnome {
@@ -157,8 +159,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                             eprintln!("Miss Shell Command");
                             continue;
                         }
-
-                        match login(username.clone(), password.clone(), cmd) {
+                        let envs = config::read_config_from_user(&current_wm);
+                        println!("{:?}", envs);
+                        match login(username.clone(), password.clone(), cmd, envs) {
                             Ok(LoginResult::Success) => {
                                 break;
                             }

@@ -11,6 +11,7 @@ pub fn login(
     username: String,
     passward: String,
     command: Vec<String>,
+    env: Vec<String>,
 ) -> anyhow::Result<LoginResult> {
     let mut stream = UnixStream::connect(env::var("GREETD_SOCK")?)?;
 
@@ -40,7 +41,7 @@ pub fn login(
                     starting = true;
                     next_request = Request::StartSession {
                         cmd: command.clone(),
-                        env: vec![],
+                        env: env.clone(),
                     }
                 }
             }
