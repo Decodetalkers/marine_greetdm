@@ -1,5 +1,5 @@
 project('marine_greetd', 'rust',
-  version: '0.2.0',
+  version: '0.3.1',
   meson_version: '>=0.60')
 
 cargo = find_program('cargo', version: '>= 1.66')
@@ -8,6 +8,8 @@ rustc = find_program('rustc', version: '>= 1.66')
 
 prefix = get_option('prefix')
 bindir = prefix / get_option('bindir')
+
+configdir = get_option('sysconfdir')
 
 build_release = not get_option('debug')
 
@@ -31,5 +33,9 @@ if get_option('marine_cli')
     install_dir: bindir,
     console: true,
     command: command
+  )
+
+  install_data('misc/config.toml',
+    install_dir: configdir / 'marine_greetd'
   )
 endif

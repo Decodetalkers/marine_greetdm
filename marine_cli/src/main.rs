@@ -160,7 +160,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                             continue;
                         }
                         let envs = config::read_config_from_user(&current_wm);
-                        println!("{:?}", envs);
                         match login(username.clone(), password.clone(), cmd, envs) {
                             Ok(LoginResult::Success) => {
                                 break;
