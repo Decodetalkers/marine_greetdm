@@ -10,8 +10,8 @@ This dm allow you to config different environment for different wm , config file
 
 ```toml
 [[envs]]
-UseIn = "Sway" # this should be the key in desktop, show the name
-Values = [
+useIn = "Sway" # this should be the key in desktop, show the name
+values = [
         { key = "QT_QPA_PLATFORMTHEME", value = "qt5ct" },
         { key = "_JAVA_AWT_WM_NONREPARENTING", value = "1" },
         { key = "XDG_CURRENT_DESKTOP", value = "sway" },
