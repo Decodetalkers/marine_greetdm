@@ -4,52 +4,57 @@ const CONFIG_DIR: &str = "/etc/marine_greetd/config.toml";
 
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
-struct Config {
+#[derive(Debug, Deserialize, Clone, Default)]
+pub struct Config {
     pub envs: Vec<ConfigDesktop>,
 }
 
-#[derive(Debug, Deserialize)]
-struct ConfigDesktop {
+#[derive(Debug, Deserialize, Clone)]
+pub struct ConfigDesktop {
     #[serde(rename = "useIn")]
     use_in: String,
     values: Vec<Env>,
+    #[serde(rename = "cmdAlias")]
+    cmd_alias: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 struct Env {
     key: String,
     value: String,
 }
 
-impl ToString for Env {
-    fn to_string(&self) -> String {
-        format!("{}={}", self.key, self.value)
+impl std::fmt::Display for Env {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}={}", self.key, self.value)
     }
 }
 
 impl ConfigDesktop {
-    fn get_envs(&self) -> Vec<String> {
+    pub fn get_envs(&self) -> Vec<String> {
         self.values.iter().map(|v| v.to_string()).collect()
+    }
+    pub fn get_real_cmd(&self) -> Option<&str> {
+        self.cmd_alias.as_deref()
     }
 }
 
-pub fn read_config_from_user(wm_name: &str) -> Vec<String> {
-    if !Path::new(&CONFIG_DIR).exists() {
-        return Vec::new();
+impl Config {
+    pub fn new() -> Self {
+        if !Path::new(&CONFIG_DIR).exists() {
+            return Self::default();
+        }
+        let Ok(mut file) = std::fs::OpenOptions::new().read(true).open(CONFIG_DIR) else {
+            return Self::default();
+        };
+        let mut buf = String::new();
+        if file.read_to_string(&mut buf).is_err() {
+            return Self::default();
+        };
+        toml::from_str::<Config>(&buf).unwrap_or_default()
     }
-    let Ok(mut file) = std::fs::OpenOptions::new().read(true).open(&CONFIG_DIR) else {
-        return Vec::new();
-    };
-    let mut buf = String::new();
-    if file.read_to_string(&mut buf).is_err() {
-        return Vec::new();
-    };
-    let Ok(config) = toml::from_str::<Config>(&buf) else {
-        return Vec::new();
-    };
-    let Some(env_config) = config.envs.iter().find(|it| it.use_in == wm_name) else {
-        return Vec::new();
-    };
-    env_config.get_envs()
+
+    pub fn get_config_desktop(&self, wm_name: &str) -> Option<&ConfigDesktop> {
+        self.envs.iter().find(|it| it.use_in == wm_name)
+    }
 }

@@ -17,8 +17,8 @@ use dialoguer::theme::ColorfulTheme;
 use dialoguer::FuzzySelect;
 use hint::*;
 const COMMANDS: &[&str] = &["loginwm", "loginshell", "showinfo", "help", "exit", "clear"];
+use config::Config;
 use std::collections::HashSet;
-
 //use rustyline::hint::{Hint, Hinter};
 enum RustLineType {
     CommandChoose,
@@ -41,7 +41,7 @@ fn diy_hints() -> HashSet<CommandHint> {
 
 fn hostname() -> String {
     fs::read_to_string("/etc/hostname")
-        .unwrap_or(String::new())
+        .unwrap_or_default()
         .trim()
         .to_string()
 }
@@ -57,6 +57,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut prompt: &str = &defaultpromot;
     let mut currenttype = RustLineType::CommandChoose;
     let mut current_wm: String = String::new();
+    let config = Config::new();
     loop {
         if let RustLineType::CommandChoose = currenttype {
             rl.set_helper(Some(h.clone()));
@@ -124,9 +125,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                             println!("You have not choose a wm");
                             continue;
                         } else {
-                            current_wm = (&*DESKTOPS)[wm_index as usize].name.clone();
+                            current_wm.clone_from(&(&*DESKTOPS)[wm_index as usize].name);
                             let is_gnome = current_wm.to_lowercase().starts_with("gnome");
-                            let cache_command = (&*DESKTOPS)[wm_index as usize].exec.clone();
+                            let cache_command = {
+                                config
+                                    .get_config_desktop(&current_wm)
+                                    .and_then(|config| config.get_real_cmd())
+                                    .map(|cmd| cmd.to_string())
+                                    .unwrap_or((&*DESKTOPS)[wm_index as usize].exec.clone())
+                            };
 
                             command = if is_gnome {
                                 format!(
@@ -159,7 +166,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                             eprintln!("Miss Shell Command");
                             continue;
                         }
-                        let envs = config::read_config_from_user(&current_wm);
+                        let wm_config = config.get_config_desktop(&current_wm);
+                        let envs = wm_config
+                            .map(|config| config.get_envs())
+                            .unwrap_or_default();
                         match login(username.clone(), password.clone(), cmd, envs) {
                             Ok(LoginResult::Success) => {
                                 break;

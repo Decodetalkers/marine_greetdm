@@ -1,5 +1,5 @@
 project('marine_greetd', 'rust',
-  version: '0.3.2',
+  version: '0.4.0',
   meson_version: '>=0.60')
 
 cargo = find_program('cargo', version: '>= 1.66')
