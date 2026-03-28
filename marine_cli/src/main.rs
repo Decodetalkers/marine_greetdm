@@ -10,7 +10,7 @@ use crate::{
     login::{login, LoginResult},
     xdginfos::DESKTOPS,
 };
-use desktopparse::LOCALE;
+use desktopparse::WaylandSession;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::FuzzySelect;
 use hint::*;
@@ -99,8 +99,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 println!("You have not choose a wm");
                                 continue;
                             } else {
-                                let comment = (&*DESKTOPS)[wm_index as usize]
-                                    .comment(&LOCALE)
+                                let comment = DESKTOPS[wm_index as usize]
+                                    .wm_comment()
                                     .clone()
                                     .unwrap_or_default();
                                 println!("{comment}");
@@ -125,10 +125,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                             println!("You have not choose a wm");
                             continue;
                         } else {
-                            current_wm = DESKTOPS[wm_index as usize]
-                                .name(&LOCALE)
-                                .unwrap()
-                                .to_string();
+                            current_wm = DESKTOPS[wm_index as usize].wm_name().to_string();
                             let is_gnome = current_wm.to_lowercase().starts_with("gnome");
                             let cache_command = {
                                 config
@@ -216,7 +213,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn choose_wm() -> i32 {
     let wms = &*DESKTOPS
         .iter()
-        .map(|wm| wm.name(&LOCALE).unwrap().to_string())
+        .map(|wm| wm.wm_name().to_string())
         .collect::<Vec<String>>();
     let Ok(index) = FuzzySelect::with_theme(&ColorfulTheme::default())
         .with_prompt("Now to choose a wm")
