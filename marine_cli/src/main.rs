@@ -6,16 +6,16 @@ use rpassword::prompt_password;
 use rustyline::Editor;
 use rustyline::{error::ReadlineError, history::DefaultHistory};
 
-use std::error::Error;
-use std::fs;
-
 use crate::{
     login::{login, LoginResult},
     xdginfos::DESKTOPS,
 };
+use desktopparse::LOCALE;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::FuzzySelect;
 use hint::*;
+use std::error::Error;
+use std::fs;
 const COMMANDS: &[&str] = &["loginwm", "loginshell", "showinfo", "help", "exit", "clear"];
 use config::Config;
 use std::collections::HashSet;
@@ -100,7 +100,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 continue;
                             } else {
                                 let comment = (&*DESKTOPS)[wm_index as usize]
-                                    .comment
+                                    .comment(&LOCALE)
                                     .clone()
                                     .unwrap_or_default();
                                 println!("{comment}");
@@ -125,14 +125,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                             println!("You have not choose a wm");
                             continue;
                         } else {
-                            current_wm.clone_from(&(&*DESKTOPS)[wm_index as usize].name);
+                            current_wm = DESKTOPS[wm_index as usize]
+                                .name(&LOCALE)
+                                .unwrap()
+                                .to_string();
                             let is_gnome = current_wm.to_lowercase().starts_with("gnome");
                             let cache_command = {
                                 config
                                     .get_config_desktop(&current_wm)
                                     .and_then(|config| config.get_real_cmd())
                                     .map(|cmd| cmd.to_string())
-                                    .unwrap_or((&*DESKTOPS)[wm_index as usize].exec.clone())
+                                    .unwrap_or(
+                                        DESKTOPS[wm_index as usize].exec().unwrap().to_string(),
+                                    )
                             };
 
                             command = if is_gnome {
@@ -211,7 +216,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn choose_wm() -> i32 {
     let wms = &*DESKTOPS
         .iter()
-        .map(|wm| wm.name.clone())
+        .map(|wm| wm.name(&LOCALE).unwrap().to_string())
         .collect::<Vec<String>>();
     let Ok(index) = FuzzySelect::with_theme(&ColorfulTheme::default())
         .with_prompt("Now to choose a wm")
